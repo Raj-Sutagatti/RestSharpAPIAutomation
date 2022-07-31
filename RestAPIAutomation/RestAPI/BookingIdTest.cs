@@ -3,65 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RestSharp;
+using RestAPIAutomation.RestAPI.APIMethods;
 using System.Net;
 using Newtonsoft.Json.Linq;
 
 namespace RestAPIAutomation.RestAPI
 {
     [TestClass]
-    public class BookingIdTest
+    public class BookingTest
     {
-        static string clienturl;
-        static RestClient client;
-
+        APIMethod bookingAPI;
 
         [TestInitialize]
         public void init()
         {
-            clienturl = "https://restful-booker.herokuapp.com";
-            client = new RestClient(clienturl);
-
+            APIMethod bookingAPI = new APIMethod("https://restful-booker.herokuapp.com");
         }
 
         [TestMethod]
         [DataTestMethod]
         [DataRow(HttpStatusCode.OK)]
-        public void GetBookingIds(HttpStatusCode expectedStatusCode)
+        [DataRow("booking")]
+        public void GetBookingIds(HttpStatusCode expectedStatusCode, string requestParam)
         {
-            var request = new RestRequest("booking", Method.Get);
-            var response = client.Execute(request);
-
-            Console.Write(response.Content);
+            var response = bookingAPI.GetMethod(requestParam);
             Assert.AreEqual(expectedStatusCode, response.StatusCode);
         }
-
-
-        [TestMethod]
-        [DataTestMethod]
-        [DataRow("admin", "password123", HttpStatusCode.OK)]
-        public void CreateAuthenticationToken(string userName, string userPassword, HttpStatusCode expStatusCode)
-        {
-            var loginData = new JObject();
-
-            loginData.Add("username", userName);
-            loginData.Add("password", userPassword);
-
-            Console.WriteLine(loginData);
-
-            var createAuthRequest = new RestRequest("auth", Method.Post);
-
-            //createAuthRequest.AddStringBody(loginData.ToString(), DataFormat.Json);
-            createAuthRequest.AddJsonBody(loginData);
-            var response = client.Execute(createAuthRequest);
-
-            Console.WriteLine(response.Content);
-            Assert.AreEqual(expStatusCode, response.StatusCode);
-
-
-        }
-
-
 
         [TestMethod]
         [DataTestMethod]
@@ -70,6 +37,7 @@ namespace RestAPIAutomation.RestAPI
         {
             var bookingData = new JObject();
             var bookingdate = new JObject();
+
 
             bookingdate.Add("checkin", checkInDate);
             bookingdate.Add("checkout", checkOutDate);
@@ -83,13 +51,9 @@ namespace RestAPIAutomation.RestAPI
 
             Console.WriteLine(bookingData);
 
-
-            var postRequest = new RestRequest("booking", Method.Post);
+            var response = bookingAPI.PostMethod(bookingData, "booking");
 
             //postRequest.AddStringBody(bookingData.ToString(), DataFormat.Json);
-            postRequest.AddJsonBody(bookingData);
-            var response = client.Execute(postRequest);
-
             Console.WriteLine(response.Content);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
